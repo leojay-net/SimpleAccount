@@ -45,9 +45,8 @@ To compile the code, click on the "Solidity Compiler" tab in the left-hand sideb
 
 To deploy the contracts:
 
-1. Deploy the EntryPoint contract first (not included in this README, refer to EIP-4337 for implementation).
-2. Deploy the SimpleAccountFactory contract, passing the EntryPoint address as a constructor parameter.
-3. Use the SimpleAccountFactory to create SimpleAccount instances.
+1. Deploy the SimpleAccountFactory contract, passing an EntryPoint address as a constructor parameter.
+2. Use the SimpleAccountFactory to create SimpleAccount instances.
 
 Once the contracts are deployed, you can interact with them by calling their respective functions. Use the Remix interface to call these functions with the required parameters.
 
