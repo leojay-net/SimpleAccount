@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import styles from './account.module.css';
+
 
 const FACTORY_ABI = process.env.FACTORY_ABI;
 const ACCOUNT_ABI = process.env.ACCOUNT_ABI;
@@ -61,7 +61,6 @@ export default function SmartWallet() {
       await tx.wait();
       const scwAddress = await factory.getAddress(address, salt);
       setScwAddress(scwAddress);
-      updateBalance();
     } catch (error) {
       console.error("Failed to create/access wallet:", error);
     }
@@ -71,12 +70,8 @@ export default function SmartWallet() {
     if (!provider || !scwAddress) return;
 
     try {
-      const contract = new ethers.Contract(scwAddress, ACCOUNT_ABI, signer);
-      const balance = await contract.getDeposit();
-      console.log("Raw balance:", balance.toString());
-      const formattedBalance = ethers.utils.formatEther(balance);
-      console.log("Formatted balance:", formattedBalance);
-      setScwBalance(formattedBalance);
+      const balance = await provider.getBalance(scwAddress);
+      setScwBalance(ethers.utils.formatEther(balance));
     } catch (error) {
       console.error("Failed to update balance:", error);
     }
@@ -88,7 +83,7 @@ export default function SmartWallet() {
     const scw = new ethers.Contract(scwAddress, ACCOUNT_ABI, signer);
 
     try {
-      const tx = await scw.withdrawDepositTo(recipient, ethers.utils.parseEther(amount));
+      const tx = await scw.execute(recipient, ethers.utils.parseEther(amount), "0x");
       await tx.wait();
       updateBalance();
     } catch (error) {
@@ -111,44 +106,32 @@ export default function SmartWallet() {
   }
 
   return (
-    <div className={styles.container}>
+    <div>
       {!address ? (
-        <button className={styles.button} onClick={connectWallet}>Connect Wallet</button>
+        <button onClick={connectWallet}>Connect Wallet</button>
       ) : (
         <div>
-          <div className={styles.addressDisplay}>
-            <strong>Connected Address:</strong> {address}
-          </div>
+          <p>Connected Address: {address}</p>
           {!scwAddress ? (
-            <button className={styles.button} onClick={createOrAccessWallet}>
-              Create/Access Smart Contract Wallet
-            </button>
+            <button onClick={createOrAccessWallet}>Create/Access Smart Contract Wallet</button>
           ) : (
             <div>
-              <div className={styles.addressDisplay}>
-                <strong>Smart Contract Wallet Address:</strong> {scwAddress}
-              </div>
-              <div className={styles.balanceDisplay}>
-                Balance: {scwBalance} ETH
-              </div>
+              <p>Smart Contract Wallet Address: {scwAddress}</p>
+              <p>Balance: {scwBalance} ETH</p>
               <input
-                className={styles.input}
                 type="text"
                 placeholder="Amount (ETH)"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
               />
               <input
-                className={styles.input}
                 type="text"
                 placeholder="Recipient Address"
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
               />
-              <div className={styles.buttonGroup}>
-                <button className={styles.button} onClick={sendFunds}>Send Funds</button>
-                <button className={styles.button} onClick={depositFunds}>Deposit Funds</button>
-              </div>
+              <button onClick={sendFunds}>Send Funds</button>
+              <button onClick={depositFunds}>Deposit Funds</button>
             </div>
           )}
         </div>
